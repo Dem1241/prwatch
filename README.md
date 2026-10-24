@@ -9,6 +9,8 @@ one command, one api call, and the ones waiting on you go to the top.
 [![Go](https://img.shields.io/badge/go-1.22+-00ADD8?style=flat-square&logo=go&logoColor=white)](https://go.dev)
 [![License](https://img.shields.io/badge/license-MIT-f5c2e7?style=flat-square)](LICENSE)
 
+<img src="assets/demo.gif" alt="prwatch running on made-up data: four rows under your move, including a PR with changes requested and a discussion with a fresh maintainer reply, and five rows waiting on maintainers, one of them flagged stale after 19 days" width="860">
+
 </div>
 
 ## why
@@ -20,20 +22,6 @@ looks the same in the inbox.
 
 prwatch answers one question for every open PR, and for any issue or
 discussion you're following: is it my move, or theirs?
-
-```
-Dem1241 · 23 open PRs · 7 threads · 3 your move · 2 merged · 2 closed
-
-YOUR MOVE
-  ✗ influxdata/telegraf#19972              2h  CI failing                 fix(outputs.postgresql): Reload the table cache a…
-  · acme/widget#42                         1h  reply waiting              fix: handle empty input
-    ↳ maintainer: thanks! could you add a test for the nil case too?
-
-WAITING ON THEM
-  ✓ amacneil/dbmate#869                    3d  no review yet              fix: ignore a byte order mark at the start of a m…
-  ✓ dolthub/go-mysql-server#4060          11h  waiting on them            Return an integer from MOD of two integers
-  d duckdb/duckdb#27705                    3h  waiting on them            Select from many JSON-files: OOM error
-```
 
 ## try it
 
@@ -59,7 +47,10 @@ prwatch -watch 5m       # redraw every 5 minutes, desktop notification when some
 prwatch -json           # rows as json, for scripts
 prwatch -stale 7        # flag PRs that have waited on others for a week (default 14)
 prwatch -user someone   # someone else's PRs
+prwatch -demo           # made-up data, no login needed
 ```
+
+the gif above is recorded from `-demo` with [vhs](https://github.com/charmbracelet/vhs): `vhs assets/demo.tape`.
 
 notifications go through `notify-send` when it's on your `PATH`. turn them off
 with `-no-notify`. nothing is sent on the first refresh, only for things that

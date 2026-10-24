@@ -18,6 +18,7 @@ func main() {
 	trackedPath := flag.String("tracked", defaultTrackedPath(), "file of issues/discussions to watch")
 	watch := flag.Duration("watch", 0, "refresh on this interval, e.g. 5m (0 runs once)")
 	noNotify := flag.Bool("no-notify", false, "in watch mode, don't send desktop notifications")
+	demo := flag.Bool("demo", false, "show made-up data instead of calling github")
 	flag.Parse()
 
 	who := *user
@@ -35,6 +36,10 @@ func main() {
 	c := colors(tty && os.Getenv("NO_COLOR") == "")
 	stale := time.Duration(*staleDays) * 24 * time.Hour
 
+	if *demo {
+		render(os.Stdout, demoSnapshot(), c, stale)
+		return
+	}
 	if *watch > 0 {
 		if *watch < time.Minute {
 			fmt.Fprintln(os.Stderr, "prwatch: -watch must be at least 1m")
