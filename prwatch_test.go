@@ -1,8 +1,11 @@
 package main
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -164,5 +167,21 @@ issue acme/widget 34 2026-10-24T18:38:51Z  # handled already
 	}
 	if got, err := loadTracked(filepath.Join(t.TempDir(), "missing")); err != nil || got != nil {
 		t.Errorf("missing file: got %v, %v", got, err)
+	}
+}
+
+func TestGraphqlHTTPError(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte(`{"message":"Bad credentials"}`))
+	}))
+	defer srv.Close()
+	defer func(u string) { graphqlURL = u }(graphqlURL)
+	graphqlURL = srv.URL
+	t.Setenv("GITHUB_TOKEN", "nope")
+
+	_, err := graphql("query { viewer { login } }", nil)
+	if err == nil || !strings.Contains(err.Error(), "Bad credentials") {
+		t.Errorf("got %v, want the message from github", err)
 	}
 }

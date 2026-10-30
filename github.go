@@ -110,6 +110,9 @@ type snapshot struct {
 	Rows   []row
 }
 
+// graphqlURL is a var so tests can point it at a local server.
+var graphqlURL = "https://api.github.com/graphql"
+
 func token() (string, error) {
 	if t := os.Getenv("GITHUB_TOKEN"); t != "" {
 		return t, nil
@@ -127,7 +130,7 @@ func graphql(q string, vars map[string]any) (map[string]json.RawMessage, error) 
 		return nil, err
 	}
 	body, _ := json.Marshal(map[string]any{"query": q, "variables": vars})
-	req, _ := http.NewRequest("POST", "https://api.github.com/graphql", bytes.NewReader(body))
+	req, _ := http.NewRequest("POST", graphqlURL, bytes.NewReader(body))
 	req.Header.Set("Authorization", "bearer "+tok)
 	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)
@@ -135,6 +138,11 @@ func graphql(q string, vars map[string]any) (map[string]json.RawMessage, error) 
 		return nil, err
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		var e struct{ Message string }
+		json.NewDecoder(resp.Body).Decode(&e)
+		return nil, fmt.Errorf("github returned %s: %s", resp.Status, e.Message)
+	}
 	var r struct {
 		Data   map[string]json.RawMessage
 		Errors []struct{ Message string }
